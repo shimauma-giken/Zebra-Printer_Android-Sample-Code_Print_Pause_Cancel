@@ -10,7 +10,10 @@ import android.widget.Button;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
+import com.zebra.sdk.printer.PrinterStatus;
 import com.zebra.sdk.printer.SGD;
+import com.zebra.sdk.printer.ZebraPrinter;
+import com.zebra.sdk.printer.ZebraPrinterFactory;
 
 public class MainActivity extends AppCompatActivity {
     String theBtMacAddress = "AC:3F:A4:F2:B0:63";
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         Button btnUnpause = (Button)findViewById(R.id.btnUnpause);
         Button btnPrint = (Button)findViewById(R.id.btnPrint);
         Button btnCancel = (Button)findViewById(R.id.btnCancel);
+        Button btnPrinterStat = (Button)findViewById(R.id.btnPrinterStat);
 
         btnOpen.setOnClickListener(new View.OnClickListener() {
                @Override
@@ -88,11 +92,45 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnPrinterStat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getPrinterStat();
+            }
+        });
+
+
     }
 
 
 
     public void logv(String msg) { Log.v(logvTag, msg);}
+
+    public void getPrinterStat() {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    ZebraPrinter printer = ZebraPrinterFactory.getInstance(thePrinterConn);
+                    PrinterStatus printerStatus = printer.getCurrentStatus();
+                    if (printerStatus.isReadyToPrint) {
+                        logv("Ready To Print");
+                    } else if (printerStatus.isPaused) {
+                        logv("Cannot Print because the printer is paused.");
+                    } else if (printerStatus.isHeadOpen) {
+                        logv("Cannot Print because the printer head is open.");
+                    } else if (printerStatus.isPaperOut) {
+                        logv("Cannot Print because the paper is out.");
+                    } else {
+                        logv("Cannot Print.");
+                    }
+                } catch (Exception e) {
+                    // Handle communications error here.
+                    e.printStackTrace();
+                    logv("Cannot Print.");
+                }
+            }
+        }).start();
+    }
 
     public void openBluetooth(String btmac) {
 

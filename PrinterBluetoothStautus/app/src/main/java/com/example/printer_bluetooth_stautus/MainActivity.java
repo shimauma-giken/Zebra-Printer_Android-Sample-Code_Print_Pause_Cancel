@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
@@ -14,6 +15,8 @@ import com.zebra.sdk.printer.PrinterStatus;
 import com.zebra.sdk.printer.SGD;
 import com.zebra.sdk.printer.ZebraPrinter;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     String theBtMacAddress = "AC:3F:A4:F2:B0:63";
@@ -24,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
     String zplPrint01= """
         ^XA^FO20,20^A0N,25,25^FDThis is a ZPL test.^FS^XZ
     """;
+
+    String getSgdValue;
+
+    String rcvBuffer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
         Button btnPrint = (Button)findViewById(R.id.btnPrint);
         Button btnCancel = (Button)findViewById(R.id.btnCancel);
         Button btnPrinterStat = (Button)findViewById(R.id.btnPrinterStat);
+        Button btnJobCount = (Button)findViewById(R.id.btnJobCount);
+        TextView tvJobCount = (TextView) findViewById(R.id.tvJobCount);
 
         btnOpen.setOnClickListener(new View.OnClickListener() {
                @Override
@@ -98,6 +107,28 @@ public class MainActivity extends AppCompatActivity {
                 getPrinterStat();
             }
         });
+
+        btnJobCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try{
+                    String sgd = "device.host_status";
+                    getSgdValue = getSGD(sgd);
+                    Thread.sleep(500);
+
+                    logv("hoststatus: " + getSgdValue);
+
+                    rcvBuffer = getReceiveBuffer(getSgdValue);
+                    tvJobCount.setText(rcvBuffer);
+
+                } catch (Exception e) {
+                    // Handle communications error here.
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
 
 
     }
@@ -227,5 +258,40 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    public String getSGD(String sgd) {
+
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    getSgdValue = SGD.GET(sgd, thePrinterConn);
+                    logv("try:" + getSgdValue);
+
+                } catch (Exception e) {
+                    // Handle communications error here.
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        return getSgdValue;
+    }
+
+    public String getReceiveBuffer(String hoststatus){
+        /* Get eee data from host-status
+
+        01234567890123456789012345678901
+        --------------------------------
+        159,0,0,0211,000,0,0,0,000,0,0,0
+        000,0,0,0,0,2,3,0,00000000,1,002
+        0000,0
+         */
+
+        String rcvBuffer = "null";
+
+        if (hoststatus.length() > 17){
+            rcvBuffer = hoststatus.substring(13,16);
+        }
+
+        return rcvBuffer;
+    }
 
 }

@@ -85,4 +85,25 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnCancel" />
+
+    <Button
+        android:id="@+id/btnJobCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:text="btnJobCount"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnPrinterStat" />
+
+    <TextView
+        android:id="@+id/tvJobCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="32dp"
+        android:text="null"
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/btnJobCount"
+        app:layout_constraintTop_toBottomOf="@+id/btnPrinterStat" />
 </androidx.constraintlayout.widget.ConstraintLayout>
